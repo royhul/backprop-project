@@ -2,7 +2,7 @@ import numpy as np
 
 class Tensor:
 
-    def __init__(self, data, parents=(), creator=None, req_grad=True):
+    def __init__(self, data, parents=(), creator=None, req_grad=False):
         self.data = np.asarray(data, dtype=np.float32)
         self.grad = np.zeros_like(self.data)
         self.parents = parents
@@ -18,6 +18,8 @@ class Tensor:
         return self.data.shape
     
     def backward(self):
+        if self.requires_grad == False:
+            raise RuntimeError("No trainable parameter found set req_grad=True on your parameters")
         topo_arr = []
         self.topo_sort(set(),set(), topo_arr)
         topo_arr.reverse()
@@ -30,11 +32,13 @@ class Tensor:
         for i in range(len(topo_arr)):
             if topo_arr[i].creator is None:
                 continue
-            parent_gradients = topo_arr[i].creator.backward(topo_arr[i].grad)
-            for n,s in zip(topo_arr[i].parents, parent_gradients):
-                if n.grad.shape != s.shape:
-                    s = self.unbroadcast(n,s)
-                n.grad += s
+            if topo_arr[i].requires_grad == True:
+                parent_gradients = topo_arr[i].creator.backward(topo_arr[i].grad)
+                for n,s in zip(topo_arr[i].parents, parent_gradients):
+                    if n.requires_grad == True:
+                        if n.grad.shape != s.shape:
+                            s = self.unbroadcast(n,s)
+                        n.grad += s
 
     def unbroadcast(self, tgt_grad, act_grad):
         for i in range(len(act_grad.shape) - len(tgt_grad.shape)):
