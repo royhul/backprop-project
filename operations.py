@@ -1,5 +1,5 @@
 import numpy as np
-from tensors import Tensor
+import tensors
 
 class operations:
 
@@ -14,8 +14,8 @@ class operations:
         obj = cls()
         args = list(args)
         for i in range(len(args)):
-            if not isinstance(args[i], Tensor):
-                args[i] = Tensor(args[i])
+            if not isinstance(args[i], tensors.Tensor):
+                args[i] = tensors.Tensor(args[i])
                 
         inputs = tuple(a.data for a in args)
         result = obj.forward(*inputs, **kwargs)
@@ -26,16 +26,16 @@ class operations:
                 break
             else:
                 req_grad = False
-        return Tensor(result, parents=args, creator=obj, req_grad=req_grad)
+        return tensors.Tensor(result, parents=args, creator=obj, req_grad=req_grad)
 
 
 def grad_check(ops, *args):
     obj = ops()
     args = list(args)
     for i in range(len(args)):
-        if not isinstance(args[i], Tensor):
-            args[i] = Tensor(args[i])
-    eps = Tensor(1e-6)
+        if not isinstance(args[i], tensors.Tensor):
+            args[i] = tensors.Tensor(args[i])
+    eps = tensors.Tensort(1e-6)
     def nudged(arr,idx,delta):
         out = arr.copy()
         out[idx] += delta

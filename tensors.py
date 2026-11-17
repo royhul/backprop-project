@@ -1,7 +1,8 @@
 import numpy as np
+import operations 
 
 class Tensor:
-
+    __array_ufunc__ = None   
     def __init__(self, data, parents=(), creator=None, req_grad=False):
         self.data = np.asarray(data, dtype=np.float64)
         self.grad = np.zeros_like(self.data)
@@ -14,7 +15,44 @@ class Tensor:
         return f"Data={self.data}, grad={self.grad}, op={op_name}, requires_grad={self.requires_grad}"
 
     def __neg__(self):
-        return Neg.run(self)
+        return operations.Neg.run(self)
+
+    def __add__(self, other):
+        return operations.Add.run(self, other)
+
+    def __radd__(self, other):
+        return operations.Add.run(other, self)
+
+    def __sub__(self, other):
+        return operations.Sub.run(self, other)
+
+    def __rsub__(self, other):
+        return operations.Sub.run(other, self)
+    
+    def __mul__(self, other):
+        return operations.Mul.run(self, other)
+
+    def __rmul__(self, other):
+        return operations.Mul.run(other, self)
+
+    def __truediv__(self, other):
+        return operations.Div.run(self, other)
+    
+    def __rtruediv__(self, other):
+        return operations.Div.run(other, self)
+
+    def __pow__(self, other):
+        return operations.Pow.run(self, other)
+
+    def __rpow__(self, other):
+        return operations.Pow.run(other, self)
+
+    def __matmul__(self, other):
+        return operations.MatMul.run(self, other)
+
+    def __rmatmul__(self, other):
+        return operations.MatMul.run(other, self)
+    
     @property
     def shape(self):
         return self.data.shape
